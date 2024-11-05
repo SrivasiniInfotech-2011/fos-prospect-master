@@ -1,0 +1,9 @@
+[submodule "fos-models"]
+	path = fos-models
+	url = https://github.com/SrivasiniInfotech-2011/fos-models.git
+[submodule "fos-repository"]
+	path = fos-repository
+	url = https://github.com/SrivasiniInfotech-2011/fos-repository.git
+[submodule "fos-infrastructure"]
+	path = fos-infrastructure
+	url = https://github.com/SrivasiniInfotech-2011/fos-infrastructure.git
