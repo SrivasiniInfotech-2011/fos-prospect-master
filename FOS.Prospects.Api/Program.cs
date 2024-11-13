@@ -57,7 +57,8 @@ builder.Services.AddTransient<IProspectRepository>(s => new ProspectRepository(c
 builder.Services.AddTransient<IRequestHandler<GetBranchLocations.Query, List<Location>>, GetBranchLocations.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetExistingProspectCustomerDetails.Query, Prospect>, GetExistingProspectCustomerDetails.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetProspectLookups.Query, List<Lookup>>, GetProspectLookups.Handler>();
-builder.Services.AddTransient<IRequestHandler<CreateProspectCommand.Command>, CreateProspectCommand.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetStates.Query, List<Lookup>>, GetStates.Handler>();
+builder.Services.AddTransient<IRequestHandler<CreateProspectCommand.Command, int>, CreateProspectCommand.Handler>();
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 var app = builder.Build();
