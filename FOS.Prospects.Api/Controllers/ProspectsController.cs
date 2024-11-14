@@ -122,6 +122,15 @@ namespace FOS.Prospects.Api.Controllers
                 var query = new GetExistingProspectCustomerDetails.Query(prospectRequest.UserId, prospectRequest.CompanyId, prospectRequest.ProspectId, prospectRequest.MobileNumber, prospectRequest.AadharNumber, prospectRequest.PanNumber);
                 var existingProspectDetail = await FOSMediator.Send(query);
 
+                if (existingProspectDetail != null && string.IsNullOrEmpty(existingProspectDetail.ProspectCode))
+                {
+                    return ErrorResponse(new Models.Responses.FOSMessageResponse
+                    {
+                        StatusCode = System.Net.HttpStatusCode.BadRequest,
+                        Error = new FOSErrorResponse { Message = Constants.Messages.NO_RECORDS_FOUND,ValidationErrors=new Dictionary<string, string[]>() },
+
+                    });
+                }
                 return Ok(new FOSResponse
                 {
                     Status = Status.Success,
