@@ -45,7 +45,7 @@ builder.Services.AddAuthentication(IdentityServerAuthenticationDefaults.Authenti
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp",
-        builder => builder.WithOrigins(new string[] { configuration["AllowCORSUrls"]! })
+        builder => builder.WithOrigins(configuration["AllowCORSUrls"]!.Split(','))
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials());
