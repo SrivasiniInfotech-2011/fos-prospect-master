@@ -1,8 +1,6 @@
-using FluentValidation;
 using FluentValidation.AspNetCore;
 using FOS.Infrastructure.Commands;
 using FOS.Infrastructure.Queries;
-using FOS.Infrastructure.Validators;
 using FOS.Models.Constants;
 using FOS.Models.Entities;
 using FOS.Prospects.Api.Middleware;
@@ -12,7 +10,6 @@ using IdentityServer4.AccessTokenValidation;
 using MediatR;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using System.ComponentModel;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,11 +51,24 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<FO
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(FOS.Models.Constants.Startup)));
 builder.Services.AddTransient<IMediator, Mediator>();
 builder.Services.AddTransient<IProspectRepository>(s => new ProspectRepository(configuration.GetConnectionString("FOSConnectionString")!));
+builder.Services.AddTransient<ILeadsRepository>(s => new LeadsRepository(configuration.GetConnectionString("FOSConnectionString")!));
+builder.Services.AddTransient<IRequestHandler<GetLeadStatuses.Query, IEnumerable<LeadStatus>>, GetLeadStatuses.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetAssetLookup.Query, IEnumerable<Lookup>?>, GetAssetLookup.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetLeadDetails.Query, Lead>, GetLeadDetails.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetLeadGenerationLookup.Query, IEnumerable<Lookup>?>, GetLeadGenerationLookup.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetLeadStatuses.Query, IEnumerable<LeadStatus>>, GetLeadStatuses.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetProspectDetailsForLead.Query, LeadProspectDetail>, GetProspectDetailsForLead.Handler>();
+builder.Services.AddTransient<IRequestHandler<CreateGuarantorData.Command, bool>, CreateGuarantorData.Handler>();
+builder.Services.AddTransient<IRequestHandler<CreateLeadDetails.Command, LeadHeader>, CreateLeadDetails.Handler>();
+builder.Services.AddTransient<IRequestHandler<CreateLeadIndividualDetails.Command, int>, CreateLeadIndividualDetails.Handler>();
+builder.Services.AddTransient<IRequestHandler<CreateNonIndividualDetail.Command, int>, CreateNonIndividualDetail.Handler>();
+builder.Services.AddTransient<IRequestHandler<CreatetLeadGenerationHeader.Command, int>, CreatetLeadGenerationHeader.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetBranchLocations.Query, List<Location>>, GetBranchLocations.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetExistingProspectCustomerDetails.Query, Prospect>, GetExistingProspectCustomerDetails.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetProspectLookups.Query, List<Lookup>>, GetProspectLookups.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetStates.Query, List<Lookup>>, GetStates.Handler>();
 builder.Services.AddTransient<IRequestHandler<CreateProspectCommand.Command, int>, CreateProspectCommand.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetLeadsForTranslander.Query, LeadsTranslander>, GetLeadsForTranslander.Handler>();
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 var app = builder.Build();
