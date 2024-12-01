@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FOS.Infrastructure;
 using FOS.Infrastructure.Commands;
 using FOS.Infrastructure.Queries;
 using FOS.Models.Constants;
@@ -13,10 +14,10 @@ namespace FOS.Prospects.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class ProspectsController : FOSControllerBase
     {
-        public ProspectsController(IMediator mediator, ILogger<ProspectsController> logger, IMapper mapper) : base(mediator, logger, mapper)
+        public ProspectsController(IMediator mediator, ILogger<ProspectsController> logger, IMapper mapper, FileServiceResolver fileServiceResolver) : base(mediator, logger, mapper)
         {
         }
 
@@ -230,6 +231,43 @@ namespace FOS.Prospects.Api.Controllers
                     Status = Status.Success,
                     Message = states
                 });
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(new Models.Responses.FOSMessageResponse
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    Error = new FOSErrorResponse { Exception = ex }
+
+                });
+            }
+        }
+
+        /// <summary>
+        /// Gets the Branch Locations.
+        /// </summary>
+        /// <param name="branchLocationRequest">Branch Location Request Object.</param>
+        /// <returns>A <see cref="Task{IActionResult}"/> representing the result of the asynchronous operation.</returns>
+        /// <response code="200">Returns the user's requests as a byte array.</response>
+        /// <response code="400">If the query is invalid or the message handler response status is not OK.</response>
+        /// <response code="401">Returns if the user is unauthorized.</response>
+        /// <response code="500">If an internal server error occurs.</response>
+        [HttpGet]
+        [Route("ExportProspectData")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(byte[]), StatusCodes.Status200OK, Web.ContentType.Json)]
+        [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status400BadRequest, Web.ContentType.Json)]
+        [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status500InternalServerError, Web.ContentType.Json)]
+
+        public async Task<IActionResult> ExportProspectData(string fileOutputType)
+        {
+            try
+            {
+                var outputContentType = fileOutputType.Equals("EXCEL",StringComparison.OrdinalIgnoreCase) ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "application/pdf";
+                var extension = fileOutputType.Equals("EXCEL", StringComparison.OrdinalIgnoreCase) ? "xlsx" : "pdf";
+                var query = new DownloadProspectReport.Query(fileOutputType);
+                var prospectFile = await FOSMediator.Send(query);
+                return new FileStreamResult(prospectFile, outputContentType) { FileDownloadName = $"PROSPECT_DATA_{DateTime.Now.ToString("ddMMyyyyhhmmss")}.{extension}" };
             }
             catch (Exception ex)
             {

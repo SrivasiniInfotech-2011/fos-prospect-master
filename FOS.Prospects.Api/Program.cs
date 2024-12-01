@@ -1,6 +1,8 @@
 using FluentValidation.AspNetCore;
+using FOS.Infrastructure;
 using FOS.Infrastructure.Commands;
 using FOS.Infrastructure.Queries;
+using FOS.Infrastructure.Services.File;
 using FOS.Models.Constants;
 using FOS.Models.Entities;
 using FOS.Prospects.Api.Middleware;
@@ -13,7 +15,6 @@ using Serilog;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Add services to the container.
 builder.Services.AddCors();
 //builder.Services.AddValidatorsFromAssemblyContaining<BranchLocationRequestValidator>();
@@ -69,6 +70,21 @@ builder.Services.AddTransient<IRequestHandler<GetProspectLookups.Query, List<Loo
 builder.Services.AddTransient<IRequestHandler<GetStates.Query, List<Lookup>>, GetStates.Handler>();
 builder.Services.AddTransient<IRequestHandler<CreateProspectCommand.Command, int>, CreateProspectCommand.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetLeadsForTranslander.Query, LeadsTranslander>, GetLeadsForTranslander.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetLobList.Query, IEnumerable<LineOfBusiness>?>, GetLobList.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetFieldExecutives.Query, IEnumerable<FieldExecutive>?>, GetFieldExecutives.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetDocumentCategories.Query, IEnumerable<DocumentCategory>?>, GetDocumentCategories.Handler>();
+builder.Services.AddTransient<IRequestHandler<DownloadProspectReport.Query, Stream>, DownloadProspectReport.Handler>();
+builder.Services.AddSingleton<ExcelFileService>();
+builder.Services.AddSingleton<PdfFileService>();
+builder.Services.AddTransient<FileServiceResolver>(serviceProvider => key =>
+{
+    return key switch
+    {
+        Constants.FileOutput.EXCEL => serviceProvider.GetService<ExcelFileService>()!,
+        Constants.FileOutput.PDF => serviceProvider.GetService<PdfFileService>()!,
+        _ => throw new KeyNotFoundException()
+    };
+});
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 var app = builder.Build();
