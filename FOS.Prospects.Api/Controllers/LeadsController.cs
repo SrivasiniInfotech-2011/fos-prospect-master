@@ -114,7 +114,7 @@ namespace FOS.Prospects.Api.Controllers
         {
             try
             {
-                var query = new GetDocumentCategories.Query(userId, companyId, (int)DocumentCategoryOptions.LOAN_DOCUMENTS);
+                var query = new GetDocumentCategories.Query(userId, companyId, 2);
                 var lobList = await FOSMediator.Send(query);
 
                 return Ok(new FOSResponse
