@@ -243,6 +243,46 @@ namespace FOS.Prospects.Api.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Gets the Branch Locations.
+        /// </summary>
+        /// <param name="branchLocationRequest">Branch Location Request Object.</param>
+        /// <returns>A <see cref="Task{IActionResult}"/> representing the result of the asynchronous operation.</returns>
+        /// <response code="200">Returns the user's requests as a byte array.</response>
+        /// <response code="400">If the query is invalid or the message handler response status is not OK.</response>
+        /// <response code="401">Returns if the user is unauthorized.</response>
+        /// <response code="500">If an internal server error occurs.</response>
+        [HttpGet]
+        [Route("GetDocumentCategories")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(byte[]), StatusCodes.Status200OK, Web.ContentType.Json)]
+        [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status400BadRequest, Web.ContentType.Json)]
+        [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status500InternalServerError, Web.ContentType.Json)]
+
+        public async Task<IActionResult> GetDocumentCategories(int companyId,int userId)
+        {
+            try
+            {
+                var query = new GetDocumentCategories.Query(companyId,userId,(int)DocumentCategoryOptions.LOAN_DOCUMENTS);
+                var states = await FOSMediator.Send(query);
+
+                return Ok(new FOSResponse
+                {
+                    Status = Status.Success,
+                    Message = states
+                });
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(new Models.Responses.FOSMessageResponse
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    Error = new FOSErrorResponse { Exception = ex }
+
+                });
+            }
+        }
         /// <summary>
         /// Gets the Branch Locations.
         /// </summary>

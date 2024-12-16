@@ -227,7 +227,7 @@ namespace FOS.Prospects.Api.Controllers
         {
             try
             {
-                var query = new GetLeadDetails.Query(companyId, userId, leadId.GetValueOrDefault(), vehicleNumber, leadNumber);
+                var query = new GetLeadDetails.Query(companyId, userId, leadId.GetValueOrDefault(), vehicleNumber??string.Empty, leadNumber??string.Empty);
                 var leadDetail = await FOSMediator.Send(query);
 
                 return Ok(new FOSResponse

@@ -2,6 +2,9 @@ using FluentValidation.AspNetCore;
 using FOS.Infrastructure;
 using FOS.Infrastructure.Commands;
 using FOS.Infrastructure.Queries;
+using FOS.Infrastructure.Services.File;
+using FOS.Infrastructure.Services.FileServer;
+using FOS.Models.Configurations;
 using FOS.Models.Constants;
 using FOS.Models.Entities;
 using FOS.Prospects.Api.Middleware;
@@ -42,7 +45,7 @@ builder.Services.AddAuthentication(IdentityServerAuthenticationDefaults.Authenti
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp",
-        builder => builder.WithOrigins(new string[] { configuration["AllowCORSUrls"]! })
+        builder => builder.WithOrigins(configuration["AllowCORSUrls"]!.Split(","))
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials());
@@ -72,18 +75,27 @@ builder.Services.AddTransient<IRequestHandler<GetLeadsForTranslander.Query, Lead
 builder.Services.AddTransient<IRequestHandler<GetLobList.Query, IEnumerable<LineOfBusiness>?>, GetLobList.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetFieldExecutives.Query, IEnumerable<FieldExecutive>?>, GetFieldExecutives.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetDocumentCategories.Query, IEnumerable<DocumentCategory>?>, GetDocumentCategories.Handler>();
-//builder.Services.AddTransient<IRequestHandler<DownloadProspectReport.Query, Stream>, DownloadProspectReport.Handler>();
-//builder.Services.AddSingleton<ExcelFileService>();
-//builder.Services.AddSingleton<PdfFileService>();
-//builder.Services.AddTransient<FileServiceResolver>(serviceProvider => key =>
-//{
-//    return key switch
-//    {
-//        Constants.FileOutput.EXCEL => serviceProvider.GetService<ExcelFileService>()!,
-//        Constants.FileOutput.PDF => serviceProvider.GetService<PdfFileService>()!,
-//        _ => throw new KeyNotFoundException()
-//    };
-//});
+builder.Services.AddTransient<IRequestHandler<DownloadProspectReport.Query, Stream>, DownloadProspectReport.Handler>();
+builder.Services.AddSingleton<ExcelFileService>();
+builder.Services.AddSingleton<PdfFileService>();
+builder.Services.AddTransient<FileServiceResolver>(serviceProvider => key =>
+{
+    return key switch
+    {
+        Constants.FileOutput.EXCEL => serviceProvider.GetService<ExcelFileService>()!,
+        Constants.FileOutput.PDF => serviceProvider.GetService<PdfFileService>()!,
+        _ => throw new KeyNotFoundException()
+    };
+});
+builder.Services.AddTransient<IFileServerService>(s => new FileServerService(
+    new FileServerConfiguration
+    {
+        Host = configuration["FileServerConfiguration:host"].ToString(),
+        Username = configuration["FileServerConfiguration:username"].ToString(),
+        Password = configuration["FileServerConfiguration:password"].ToString(),
+        Port = Convert.ToInt32(configuration["FileServerConfiguration:port"].ToString())
+    }));
+
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 var app = builder.Build();
