@@ -2,6 +2,9 @@ using FluentValidation.AspNetCore;
 using FOS.Infrastructure;
 using FOS.Infrastructure.Commands;
 using FOS.Infrastructure.Queries;
+using FOS.Infrastructure.Services.File;
+using FOS.Infrastructure.Services.FileServer;
+using FOS.Models.Configurations;
 using FOS.Models.Constants;
 using FOS.Models.Entities;
 using FOS.Prospects.Api.Middleware;
@@ -42,7 +45,7 @@ builder.Services.AddAuthentication(IdentityServerAuthenticationDefaults.Authenti
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp",
-        builder => builder.WithOrigins(configuration["AllowCORSUrls"]!.Split(','))
+        builder => builder.WithOrigins(configuration["AllowCORSUrls"]!.Split(",")) 
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials());
@@ -52,8 +55,10 @@ builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(FOS.Models.Constants.
 builder.Services.AddTransient<IMediator, Mediator>();
 builder.Services.AddTransient<IProspectRepository>(s => new ProspectRepository(configuration.GetConnectionString("FOSConnectionString")!));
 builder.Services.AddTransient<ILeadsRepository>(s => new LeadsRepository(configuration.GetConnectionString("FOSConnectionString")!));
+builder.Services.AddTransient<IFieldVerficationRepository>(s => new FieldVerficationRepository(configuration.GetConnectionString("FOSConnectionString")!));
 builder.Services.AddTransient<IRequestHandler<GetLeadStatuses.Query, IEnumerable<LeadStatus>>, GetLeadStatuses.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetAssetLookup.Query, IEnumerable<Lookup>?>, GetAssetLookup.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetFvrNeighbourLookup.Query, IEnumerable<Lookup>?>, GetFvrNeighbourLookup.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetLeadDetails.Query, Lead>, GetLeadDetails.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetLeadGenerationLookup.Query, IEnumerable<Lookup>?>, GetLeadGenerationLookup.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetLeadStatuses.Query, IEnumerable<LeadStatus>>, GetLeadStatuses.Handler>();
@@ -67,23 +72,36 @@ builder.Services.AddTransient<IRequestHandler<GetBranchLocations.Query, List<Loc
 builder.Services.AddTransient<IRequestHandler<GetExistingProspectCustomerDetails.Query, Prospect>, GetExistingProspectCustomerDetails.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetProspectLookups.Query, List<Lookup>>, GetProspectLookups.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetStates.Query, List<Lookup>>, GetStates.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetFvrHirerLookup.Query, IEnumerable<Lookup>?>, GetFvrHirerLookup.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetFvrAssetLookup.Query, IEnumerable<Lookup>?>, GetFvrAssetLookup.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetFvrNeighbourHoodDetails.Query, FvrDetail?>, GetFvrNeighbourHoodDetails.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetLeadAssetDetails.Query, FvrAsset?>, GetLeadAssetDetails.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetLeadHirerDetails.Query, FvrDetail?>, GetLeadHirerDetails.Handler>();
+builder.Services.AddTransient<IRequestHandler<AddFvrHirerDetail.Command, int>, AddFvrHirerDetail.Handler>();
+builder.Services.AddTransient<IRequestHandler<AddFvrAssetDetail.Command, int>, AddFvrAssetDetail.Handler>();
 builder.Services.AddTransient<IRequestHandler<CreateProspectCommand.Command, int>, CreateProspectCommand.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetLeadsForTranslander.Query, LeadsTranslander>, GetLeadsForTranslander.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetLobList.Query, IEnumerable<LineOfBusiness>?>, GetLobList.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetFieldExecutives.Query, IEnumerable<FieldExecutive>?>, GetFieldExecutives.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetDocumentCategories.Query, IEnumerable<DocumentCategory>?>, GetDocumentCategories.Handler>();
-//builder.Services.AddTransient<IRequestHandler<DownloadProspectReport.Query, Stream>, DownloadProspectReport.Handler>();
-//builder.Services.AddSingleton<ExcelFileService>();
-//builder.Services.AddSingleton<PdfFileService>();
-//builder.Services.AddTransient<FileServiceResolver>(serviceProvider => key =>
-//{
-//    return key switch
-//    {
-//        Constants.FileOutput.EXCEL => serviceProvider.GetService<ExcelFileService>()!,
-//        Constants.FileOutput.PDF => serviceProvider.GetService<PdfFileService>()!,
-//        _ => throw new KeyNotFoundException()
-//    };
-//});
+builder.Services.AddTransient<IRequestHandler<DownloadProspectReport.Query, Stream>, DownloadProspectReport.Handler>();
+builder.Services.AddSingleton<ExcelFileService>();
+builder.Services.AddSingleton<PdfFileService>();
+builder.Services.AddTransient<FileServiceResolver>(serviceProvider => key =>
+{
+    return key switch
+    {
+        Constants.FileOutput.EXCEL => serviceProvider.GetService<ExcelFileService>()!,
+        Constants.FileOutput.PDF => serviceProvider.GetService<PdfFileService>()!,
+        _ => throw new KeyNotFoundException()
+    };
+});
+builder.Services.AddTransient<IFileServerService>(s => new FileServerService(
+    new FileServerConfiguration
+    {
+        Host = configuration["FileServerConfiguration:Url"].ToString()
+    }));
+
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 var app = builder.Build();
