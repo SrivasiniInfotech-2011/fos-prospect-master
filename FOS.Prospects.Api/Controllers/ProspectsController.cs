@@ -312,12 +312,11 @@ namespace FOS.Prospects.Api.Controllers
         {
             try
             {
-                //var outputContentType = fileOutputType.Equals("EXCEL",StringComparison.OrdinalIgnoreCase) ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "application/pdf";
-                //var extension = fileOutputType.Equals("EXCEL", StringComparison.OrdinalIgnoreCase) ? "xlsx" : "pdf";
-                //var query = new DownloadProspectReport.Query(fileOutputType);
-                //var prospectFile = await FOSMediator.Send(query);
-                //return new FileStreamResult(prospectFile, outputContentType) { FileDownloadName = $"PROSPECT_DATA_{DateTime.Now.ToString("ddMMyyyyhhmmss")}.{extension}" };
-                return null;
+                var outputContentType = fileOutputType.Equals("EXCEL", StringComparison.OrdinalIgnoreCase) ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "application/pdf";
+                var extension = fileOutputType.Equals("EXCEL", StringComparison.OrdinalIgnoreCase) ? "xlsx" : "pdf";
+                var query = new DownloadProspectReport.Query(fileOutputType);
+                var prospectFile = await FOSMediator.Send(query);
+                return new FileStreamResult(prospectFile, outputContentType) { FileDownloadName = $"PROSPECT_DATA_{DateTime.Now.ToString("ddMMyyyyhhmmss")}.{extension}" };
             }
             catch (Exception ex)
             {
