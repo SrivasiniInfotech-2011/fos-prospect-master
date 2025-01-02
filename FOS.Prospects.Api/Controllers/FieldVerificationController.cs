@@ -5,6 +5,7 @@ using FOS.Models.Constants;
 using FOS.Models.Entities;
 using FOS.Models.Responses;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static FOS.Models.Constants.Constants;
 
@@ -12,6 +13,7 @@ namespace FOS.Prospects.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize]
     public class FieldVerificationController(IMediator mediator, ILogger<FieldVerificationController> logger, IMapper mapper) : FOSControllerBase(mediator, logger, mapper)
     {
 
@@ -345,6 +347,55 @@ namespace FOS.Prospects.Api.Controllers
                 {
                     StatusCode = System.Net.HttpStatusCode.BadRequest,
                     Error = new FOSErrorResponse { Exception = ex }
+                });
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the Fvr Guarantor Details.
+        /// </summary>
+        /// <returns>A <see cref="Task{IActionResult}"/> representing the result of the asynchronous operation.</returns>
+        /// <response code="200">Returns the user's requests as a byte array.</response>
+        /// <response code="400">If the query is invalid or the message handler response status is not OK.</response>
+        /// <response code="401">Returns if the user is unauthorized.</response>
+        /// <response code="500">If an internal server error occurs.</response>
+        [HttpGet]
+        [Route("GetFvrGuarantorDetails")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(byte[]), StatusCodes.Status200OK, Web.ContentType.Json)]
+        [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status400BadRequest, Web.ContentType.Json)]
+        [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status500InternalServerError, Web.ContentType.Json)]
+
+        public async Task<IActionResult> GetFvrGuarantorDetails(int? companyId, int? userId, int? leadId, int? personType)
+        {
+            try
+            {
+                var query = new GetFvrDetails.Query(userId, companyId, leadId,personType);
+                var fvrDetail = await FOSMediator.Send(query);
+
+                if (fvrDetail == null)
+                {
+                    return ErrorResponse(new Models.Responses.FOSMessageResponse
+                    {
+                        StatusCode = System.Net.HttpStatusCode.BadRequest,
+                        Error = new FOSErrorResponse { Message = Constants.Messages.NO_RECORDS_FOUND, ValidationErrors = new Dictionary<string, string[]>() },
+
+                    });
+                }
+                return Ok(new FOSResponse
+                {
+                    Status = Status.Success,
+                    Message = fvrDetail
+                });
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(new Models.Responses.FOSMessageResponse
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    Error = new FOSErrorResponse { Exception = ex }
+
                 });
             }
         }

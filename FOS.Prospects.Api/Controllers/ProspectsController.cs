@@ -14,7 +14,7 @@ namespace FOS.Prospects.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class ProspectsController : FOSControllerBase
     {
         public ProspectsController(IMediator mediator, ILogger<ProspectsController> logger, IMapper mapper) : base(mediator, logger, mapper)

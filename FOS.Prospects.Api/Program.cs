@@ -45,7 +45,7 @@ builder.Services.AddAuthentication(IdentityServerAuthenticationDefaults.Authenti
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp",
-        builder => builder.WithOrigins(configuration["AllowCORSUrls"]!.Split(",")) 
+        builder => builder.WithOrigins(configuration["AllowCORSUrls"]!.Split(","))
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials());
@@ -85,6 +85,7 @@ builder.Services.AddTransient<IRequestHandler<GetLobList.Query, IEnumerable<Line
 builder.Services.AddTransient<IRequestHandler<GetFieldExecutives.Query, IEnumerable<FieldExecutive>?>, GetFieldExecutives.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetDocumentCategories.Query, IEnumerable<DocumentCategory>?>, GetDocumentCategories.Handler>();
 builder.Services.AddTransient<IRequestHandler<DownloadProspectReport.Query, Stream>, DownloadProspectReport.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetFvrDetails.Query, FvrDetail?>, GetFvrDetails.Handler>();
 builder.Services.AddSingleton<ExcelFileService>();
 builder.Services.AddSingleton<PdfFileService>();
 builder.Services.AddTransient<FileServiceResolver>(serviceProvider => key =>
@@ -99,8 +100,10 @@ builder.Services.AddTransient<FileServiceResolver>(serviceProvider => key =>
 builder.Services.AddTransient<IFileServerService>(s => new FileServerService(
     new FileServerConfiguration
     {
-        Host = configuration["FileServerConfiguration:Url"].ToString()
-    }));
+        CmsUrl = configuration["CmsUrl"].ToString(),
+        CmsFilePath = configuration["CmsPath"].ToString(),
+
+    }, s.GetService<ILogger<FileServerService>>()));
 
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
