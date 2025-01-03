@@ -7,6 +7,7 @@ using FOS.Infrastructure.Services.FileServer;
 using FOS.Models.Configurations;
 using FOS.Models.Constants;
 using FOS.Models.Entities;
+using FOS.Models.Requests;
 using FOS.Prospects.Api.Middleware;
 using FOS.Repository.Implementors;
 using FOS.Repository.Interfaces;
@@ -85,9 +86,19 @@ builder.Services.AddTransient<IRequestHandler<GetLobList.Query, IEnumerable<Line
 builder.Services.AddTransient<IRequestHandler<GetFieldExecutives.Query, IEnumerable<FieldExecutive>?>, GetFieldExecutives.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetDocumentCategories.Query, IEnumerable<DocumentCategory>?>, GetDocumentCategories.Handler>();
 builder.Services.AddTransient<IRequestHandler<DownloadProspectReport.Query, Stream>, DownloadProspectReport.Handler>();
-builder.Services.AddTransient<IRequestHandler<GetFvrDetails.Query, FvrDetail?>, GetFvrDetails.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetCompanyMaster.Query, CompanyMasterRequest>, GetCompanyMaster.Handler>();
+builder.Services.AddSingleton<FileServerConfiguration>();
+builder.Services.AddTransient<IFileServerService, FileServerService>();
 builder.Services.AddSingleton<ExcelFileService>();
 builder.Services.AddSingleton<PdfFileService>();
+builder.Services.AddTransient<IRequestHandler<GetFvrDetails.Query, FvrDetail?>, GetFvrDetails.Handler>();
+builder.Services.AddTransient<IFileServerService>(s => new FileServerService(
+    new FileServerConfiguration
+    {
+        CmsUrl = configuration["CmsUrl"].ToString(),
+        CmsFilePath = configuration["CmsPath"].ToString(),
+
+    }, s.GetService<ILogger<FileServerService>>()));
 builder.Services.AddTransient<FileServiceResolver>(serviceProvider => key =>
 {
     return key switch
@@ -97,14 +108,6 @@ builder.Services.AddTransient<FileServiceResolver>(serviceProvider => key =>
         _ => throw new KeyNotFoundException()
     };
 });
-builder.Services.AddTransient<IFileServerService>(s => new FileServerService(
-    new FileServerConfiguration
-    {
-        CmsUrl = configuration["CmsUrl"].ToString(),
-        CmsFilePath = configuration["CmsPath"].ToString(),
-
-    }, s.GetService<ILogger<FileServerService>>()));
-
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 var app = builder.Build();

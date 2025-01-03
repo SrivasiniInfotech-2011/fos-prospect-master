@@ -253,6 +253,37 @@ namespace FOS.Prospects.Api.Controllers
         }
 
 
+        [HttpPost]
+        [Route("GetCompanyMasterDetails")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(byte[]), StatusCodes.Status200OK, Web.ContentType.Json)]
+        [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status400BadRequest, Web.ContentType.Json)]
+        [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status500InternalServerError, Web.ContentType.Json)]
+
+        public async Task<IActionResult> GetCompanyMasterDetails(GetCompanyRequestModel customerRequest)    
+        {
+            try
+            {
+                var query = new GetCompanyMaster.Query(customerRequest.CompanyId); 
+                var existingProspectDetail = await FOSMediator.Send(query);
+
+                return Ok(new FOSResponse
+                {
+                    Status = Status.Success,
+                    Message = existingProspectDetail
+                });
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(new Models.Responses.FOSMessageResponse
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    Error = new FOSErrorResponse { Exception = ex }
+
+                });
+            }
+        }
+
         /// <summary>
         /// Gets the Branch Locations.
         /// </summary>
