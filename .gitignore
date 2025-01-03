@@ -1,0 +1,9 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/FOS.Prospects.Api/.vs
+/FOS.Prospects.Api/bin
+/FOS.Prospects.Api/Properties
+/FOS.Prospects.Api/obj
+/.vs
