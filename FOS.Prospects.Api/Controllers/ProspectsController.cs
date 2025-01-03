@@ -260,7 +260,7 @@ namespace FOS.Prospects.Api.Controllers
         [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status400BadRequest, Web.ContentType.Json)]
         [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status500InternalServerError, Web.ContentType.Json)]
 
-        public async Task<IActionResult> GetCompanyMasterDetails(GetCompanyRequestModel customerRequest)
+        public async Task<IActionResult> GetCompanyMasterDetails(GetCompanyRequestModel customerRequest)    
         {
             try
             {
