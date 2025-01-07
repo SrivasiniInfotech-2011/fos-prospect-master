@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using FOS.Infrastructure;
 using FOS.Infrastructure.Commands;
 using FOS.Infrastructure.Queries;
 using FOS.Models.Constants;

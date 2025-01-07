@@ -88,7 +88,6 @@ builder.Services.AddTransient<IRequestHandler<GetDocumentCategories.Query, IEnum
 builder.Services.AddTransient<IRequestHandler<DownloadProspectReport.Query, Stream>, DownloadProspectReport.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetCompanyMaster.Query, CompanyMasterRequest>, GetCompanyMaster.Handler>();
 builder.Services.AddSingleton<FileServerConfiguration>();
-builder.Services.AddTransient<IFileServerService, FileServerService>();
 builder.Services.AddSingleton<ExcelFileService>();
 builder.Services.AddSingleton<PdfFileService>();
 builder.Services.AddTransient<IRequestHandler<GetFvrDetails.Query, FvrDetail?>, GetFvrDetails.Handler>();
@@ -99,6 +98,7 @@ builder.Services.AddTransient<IFileServerService>(s => new FileServerService(
         CmsFilePath = configuration["CmsPath"].ToString(),
 
     }, s.GetService<ILogger<FileServerService>>()));
+
 builder.Services.AddTransient<FileServiceResolver>(serviceProvider => key =>
 {
     return key switch
@@ -108,6 +108,7 @@ builder.Services.AddTransient<FileServiceResolver>(serviceProvider => key =>
         _ => throw new KeyNotFoundException()
     };
 });
+
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 var app = builder.Build();
