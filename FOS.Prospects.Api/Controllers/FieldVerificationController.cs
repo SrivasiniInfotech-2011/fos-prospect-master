@@ -13,7 +13,7 @@ namespace FOS.Prospects.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class FieldVerificationController(IMediator mediator, ILogger<FieldVerificationController> logger, IMapper mapper) : FOSControllerBase(mediator, logger, mapper)
     {
 
