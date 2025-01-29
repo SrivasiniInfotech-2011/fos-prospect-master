@@ -87,6 +87,9 @@ builder.Services.AddTransient<IRequestHandler<GetFieldExecutives.Query, IEnumera
 builder.Services.AddTransient<IRequestHandler<GetDocumentCategories.Query, IEnumerable<DocumentCategory>?>, GetDocumentCategories.Handler>();
 builder.Services.AddTransient<IRequestHandler<DownloadProspectReport.Query, Stream>, DownloadProspectReport.Handler>();
 builder.Services.AddTransient<IRequestHandler<GetCompanyMaster.Query, CompanyMasterRequest>, GetCompanyMaster.Handler>();
+builder.Services.AddTransient<IRequestHandler<GetGlobalParameter.Query, List<GlobalParameterRequest>>, GetGlobalParameter.Handler>();
+//builder.Services.AddTransient<IRequestHandler<GetGlobalParameter.Query,GlobalParameterRequest>,GetGlobalParameter.Handler();
+
 builder.Services.AddSingleton<FileServerConfiguration>();
 builder.Services.AddSingleton<ExcelFileService>();
 builder.Services.AddSingleton<PdfFileService>();

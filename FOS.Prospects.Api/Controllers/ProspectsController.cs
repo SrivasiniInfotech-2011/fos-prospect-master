@@ -13,7 +13,7 @@ namespace FOS.Prospects.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class ProspectsController : FOSControllerBase
     {
         public ProspectsController(IMediator mediator, ILogger<ProspectsController> logger, IMapper mapper) : base(mediator, logger, mapper)
@@ -264,6 +264,38 @@ namespace FOS.Prospects.Api.Controllers
             try
             {
                 var query = new GetCompanyMaster.Query(customerRequest.CompanyId); 
+                var existingProspectDetail = await FOSMediator.Send(query);
+
+                return Ok(new FOSResponse
+                {
+                    Status = Status.Success,
+                    Message = existingProspectDetail
+                });
+            }
+            catch (Exception ex)
+            {
+                return ErrorResponse(new Models.Responses.FOSMessageResponse
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    Error = new FOSErrorResponse { Exception = ex }
+
+                });
+            }
+        }
+
+
+        [HttpPost]
+        [Route("GetGlobalParameterSetup")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(byte[]), StatusCodes.Status200OK, Web.ContentType.Json)]
+        [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status400BadRequest, Web.ContentType.Json)]
+        [ProducesResponseType(typeof(FOSBaseResponse), StatusCodes.Status500InternalServerError, Web.ContentType.Json)]
+
+        public async Task<IActionResult> GetGlobalParameterSetup(GetGlobalParameterRequest customerRequest)
+        {
+            try
+            {
+                var query = new GetGlobalParameter.Query(customerRequest.Company_ID, customerRequest.User_ID);
                 var existingProspectDetail = await FOSMediator.Send(query);
 
                 return Ok(new FOSResponse
